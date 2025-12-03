@@ -416,3 +416,14 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# AppSettings Development file
+**/appSettings.Development.json
+local.settings.development.json
+
+# Private data files
+private/
+.private/
+
+# Working folder for downloaded files
+downloads/

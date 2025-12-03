@@ -1,0 +1,23 @@
+<Project>
+  <PropertyGroup>
+    <AnalysisLevel>Latest</AnalysisLevel>
+    <AnalysisMode>All</AnalysisMode>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference
+	   Include="SonarAnalyzer.CSharp"
+       Version="10.16.0.129956"
+       PrivateAssets="all"
+       Condition="$(MSBuildProjectExtension) == '.csproj'" />
+  </ItemGroup>
+  
+  <!--<PropertyGroup>
+    --><!-- Comma-separated list of rule keys to disable --><!--
+    <SonarQubeDisabledRules>CA2007</SonarQubeDisabledRules>
+  </PropertyGroup>-->
+
+</Project>

@@ -11,14 +11,14 @@ internal partial class BlobUploadService(
     BlobServiceClient blobServiceClient,
     ILogger<BlobUploadService> logger) : IHostedService
 {
-    private static readonly Action<ILogger, Exception?> _startingLog =
+    private static readonly Action<ILogger, Exception?> _logStart =
         LoggerMessage.Define(LogLevel.Information, new EventId(0, nameof(BlobUploadService)), "BlobUploadService is starting");
-    private static readonly Action<ILogger, Exception?> _stoppingLog =
+    private static readonly Action<ILogger, Exception?> _logStop =
         LoggerMessage.Define(LogLevel.Information, new EventId(0, nameof(BlobUploadService)), "BlobUploadService is stopping");
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        _startingLog(logger, null);
+        _logStart(logger, null);
         Console.WriteLine("Starting...");
 
         await UploadBlobs();
@@ -26,7 +26,7 @@ internal partial class BlobUploadService(
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        _stoppingLog(logger, null);
+        _logStop(logger, null);
         Console.WriteLine("Stopping...");
     }
 

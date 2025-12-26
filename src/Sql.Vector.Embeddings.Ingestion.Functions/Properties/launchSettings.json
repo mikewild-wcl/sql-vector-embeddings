@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Sql.Vector.Embeddings.Ingestion.Functions": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7034",
+      "launchBrowser": false
+    }
+  }
+}

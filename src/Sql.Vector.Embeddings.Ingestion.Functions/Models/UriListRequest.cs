@@ -1,5 +1,15 @@
-﻿namespace Sql.Vector.Embeddings.Ingestion.Functions.Models;
+﻿using System.Text.Json.Serialization;
 
-public record UriListRequest(IReadOnlyCollection<string> Items)
+namespace Sql.Vector.Embeddings.Ingestion.Functions.Models;
+
+public record UriListRequest(
+    IReadOnlyCollection<Uri> Uris)
 {
+    public string? Test { get; set; }
+
+    [JsonPropertyName("test2")]
+    public string? Test2 { get; set; }
+
+    [JsonPropertyName("uris")]
+    IReadOnlyCollection<Uri>? MoreUris { get; init; }
 }

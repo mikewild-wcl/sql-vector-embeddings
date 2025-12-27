@@ -1,0 +1,27 @@
+@Functions_HostAddress = http://localhost:7034
+
+POST {{Functions_HostAddress}}/api/ingest-uris/
+Content-Type: application/json
+Accept: application/json
+
+{
+  "UriListRequest": {
+    "Uris": [
+      "https://arxiv.org/pdf/1409.0473",
+      "https://arxiv.org/pdf/2309.07930",
+      "https://arxiv.org/pdf/1706.03762"
+    ]
+    "Test": "Hello",
+    "Test2": "Hello 2",
+    "uris": [
+      "https://arxiv.org/pdf/1409.0473",
+      "https://arxiv.org/pdf/2309.07930"
+      "https://arxiv.org/pdf/1706.03762",
+    ],
+    "Uris": [
+      "https://arxiv.org/pdf/1409.0473",
+    ]
+  }
+}
+
+###

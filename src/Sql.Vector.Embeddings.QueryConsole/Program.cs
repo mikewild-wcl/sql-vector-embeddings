@@ -1,38 +1,51 @@
-﻿using Microsoft.Extensions.Hosting;
-using OllamaSharp;
-using System.Net.Http;
-using System.Threading;
+﻿using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 var builder = Host.CreateApplicationBuilder();
 
 builder.AddServiceDefaults();
 
-builder.AddOllamaApiClient("chat");
-builder.AddOllamaApiClient("embeddings");
+builder.AddOllamaApiClient("chat").AddChatClient();
+builder.AddOllamaApiClient("embeddings").AddEmbeddingGenerator();
 
 //TODO: can I get "AISettings:embeddingDimensions" from the embedding model?
+//TODO: Try to get an interactive command app
+//      https://rasper87.blog/2025/10/29/building-a-dynamic-command-sample-with-net-aspire/
+//      https://github.com/dotnet/aspire/discussions/4625
+var embeddingDimensions = int.TryParse(builder.Configuration["AISettings:embeddingDimensions"], out var dimensions) && dimensions > 0 ? dimensions : 1536;
+Console.WriteLine($"Using embedding dimensions: {embeddingDimensions}");
 
-/*
-var agent = new AzureOpenAIClient(
-    new Uri(configuration["AzureOpenAiSettings:Endpoint"]!),
-    new ApiKeyCredential(configuration["AzureOpenAiSettings:ApiKey"]!),
-    new AzureOpenAIClientOptions
-    {
-        Transport = new HttpClientPipelineTransport(httpClient)
-    })
-    .GetChatClient(configuration["AzureOpenAiSettings:DeploymentName"])
+var host = builder.Build();
+
+var chatClient = host.Services.GetRequiredService<IChatClient>();
+
+var agent = chatClient
     .CreateAIAgent(
-        instructions: "You are a helpful assistant that loves talking about cooking.",
-        name: "Assistant"
-        );
-
+        instructions: "You are a helpful assistant that loves talking about yourself.",
+        name: "Assistant");
 var thread = agent.GetNewThread();
-*/
+
+if (args.Length > 0)
+{
+    Console.WriteLine("args:");    
+    foreach (var a in args)
+    {
+        Console.WriteLine($"    {a}");
+    }
+    Console.WriteLine();
+}
+
+await foreach (var update in agent.RunStreamingAsync("Introduce yourself.", thread))
+{
+    Console.Write(update);
+}
+Console.WriteLine();
 
 string? userInput;
 do
 {
-    Console.Write("""User > """);
+    Console.Write("User > ");
     userInput = Console.ReadLine();
 
     if (userInput is null or { Length: 0 })
@@ -41,9 +54,9 @@ do
     }
 
     Console.Write(@"Assistant > ");
-    //await foreach (var update in agent.RunStreamingAsync(userInput, thread))
-    //{
-    //    Console.Write(update);
-    //}
+    await foreach (var update in agent.RunStreamingAsync(userInput, thread))
+    {
+        Console.Write(update);
+    }
     Console.WriteLine();
 } while (userInput is { Length: > 0 });

@@ -20,7 +20,7 @@ public class IngestFromUriFunction(ILogger<IngestFromUriFunction> logger)
         LoggerMessage.Define(
             LogLevel.Warning,
             new EventId(0, nameof(IngestFromUriFunction)),
-            "IngestFromUriFunction http function called with no URIs.");
+            "IngestFromUriFunction called with no URIs.");
 
     private static readonly Action<ILogger, Uri, Exception?> _logUriProcessStarted =
     LoggerMessage.Define<Uri>(
@@ -29,14 +29,13 @@ public class IngestFromUriFunction(ILogger<IngestFromUriFunction> logger)
         "IngestFromUriFunction processing uri: {Uri}.");
 
     [Function("IngestFromUriFunction")]
-    public IActionResult Run(
+    public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Function, "post", Route = "ingest-uris")]
         HttpRequest request,
+        [Microsoft.Azure.Functions.Worker.Http.FromBody]
         UriListRequest uris)
     {
-        //https://stackoverflow.com/questions/76013830/net-azure-functions-model-binding
-
-        if (uris?.Uris == null || uris.Uris.Count == 0)
+        if (uris?.Uris is null || uris.Uris.Count == 0)
         {
             _logNullriParameterWarning(_logger, null);
             return new BadRequestObjectResult("No URIs provided.");

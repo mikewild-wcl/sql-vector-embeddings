@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Microsoft.Data.SqlClient" Version="13.1.0" />
+    <PackageReference Include="DbUp" Version="5.0.41" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sql.Vector.Embeddings.ServiceDefaults\Sql.Vector.Embeddings.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <NoWarn>CA1303</NoWarn>
+  </PropertyGroup>
+
+</Project>

@@ -24,6 +24,7 @@ var aiEmbeddingDimensionsParameter = builder.Configuration[$"Parameters:embeddin
 var useGPUParameter = builder.Configuration[$"Parameters:useGPU"];
 
 var ollama = builder.AddOllama("ollama")
+    .WithLifetime(ContainerLifetime.Persistent)
     .WithDataVolume()
     .WithOpenWebUI();
 
@@ -42,88 +43,76 @@ var devTunnel = builder.AddDevTunnel("ollama-api")
        //    Protocol = "https"
        //}
    )
-   //.WithAnonymousAccess()
-   .WaitFor(ollama);
+   .WithAnonymousAccess()
+   .WaitFor(ollama)
+   //https://github.com/dotnet/docs-aspire/issues/2340
+    .OnResourceEndpointsAllocated((endpoint, @event, cancellationToken) =>
+    {
+        //Console.WriteLine($"Endpoint allocated: {endpoint.IsAllocated}");
+        //Console.WriteLine($"Resolved Url: {endpoint.Url}");
+        return Task.CompletedTask;
+    })
+    .OnResourceReady((endpoint, @event, cancellationToken) =>
+    {
+        return Task.CompletedTask;
+    });
 
-var sqlServer = builder.AddSqlServer("sql")
+var sql = builder.AddSqlServer("sql")
     .WithDataVolume()
-    .WithLifetime(ContainerLifetime.Persistent);
-
-var sqlDatabase = sqlServer.AddDatabase("database", "Documents");
+    .WithLifetime(ContainerLifetime.Persistent)
+    .AddDatabase("database", "Documents");
 
 var ps = builder.AddPowerShell("ps")
-    //.WithReference(devTunnel)
-    .WithReference(sqlDatabase)
-    //.WithReference(devTunnel)
-    //.WithReference(devTunnel.GetEndpoint(ollama, "https"), "dev-endpoint");
+    //.WithReference(ollama, devTunnel)
     //.WithReference(devTunnel.GetEndpoint(ollama, "https"));
-    //.WithEnvironment("OLLAMA_API_URL", devTunnel.GetEndpoint("x")!.Url)
-    //.WithEnv(devTunnel.GetEndpoint("x"))
     .WaitFor(devTunnel)
-    .WaitFor(sqlDatabase);
-
-//var devTunnelConnection = devTunnel.GetEndpoint.GetConnectionInfo();
-//ps.WithEnvironment("OLLAMA_API_URL", devTunnelConnection!.Url)
-//  .WithEnvironment
-
-///https://github.com/dotnet/docs-aspire/issues/2340
-var x = devTunnel.OnResourceEndpointsAllocated(
-//builder.Eventing.Subscribe<AfterEndpointsAllocatedEvent>(
-    (endpoint, @event, cancellationToken) =>
-    {
-        //Console.WriteLine($"Endpoint allocated: {endpoint.IsAllocated}");
-        //Console.WriteLine($"Resolved Url: {endpoint.Url}");
-
-        var endpoint1 = devTunnel.GetEndpoint("http");
-        var endpoint1s = devTunnel.GetEndpoint("https");
-
-        return Task.CompletedTask;
-    });
-
-var x2 = devTunnel.OnResourceReady(
-//builder.Eventing.Subscribe<AfterEndpointsAllocatedEvent>(
-    (endpoint, @event, cancellationToken) =>
-    {
-        //Console.WriteLine($"Endpoint allocated: {endpoint.IsAllocated}");
-        //Console.WriteLine($"Resolved Url: {endpoint.Url}");
-
-        var tunnelEndpoint = endpoint.GetEndpoint("tunnel");
-        var ollamaEndpoint = endpoint.GetEndpoint("tunnel");
-        var tunnelEndpoint2 = devTunnel.GetEndpoint("tunnel");
-        var tunnelEndpoint3 = ollama.GetEndpoint("tunnel");
-
-        return Task.CompletedTask;
-    });
+    .WaitFor(sql);
 
 #pragma warning disable CA1031 // Do not catch general exception types
 try
 {
     var embeddingDiemensions = aiEmbeddingDimensionsParameter is not null && int.TryParse(aiEmbeddingDimensionsParameter, out var dimensions) ? dimensions : 1536;
-    var endpoint = devTunnel.GetEndpoint("http");
-    var endpoint2 = devTunnel.GetEndpoint("https");
-    //var embeddingEndpoint = endpoint?.Url ?? "unknown";
-    //var embeddingEndpoint2 = ollama.GetEndpoint("http")?.Url ?? "unknown";
-    //var embeddingEndpoint = ollama.GetEndpoint("https")?.Url ?? "unknown";
-    //var embeddingEndpoint = devTunnel.GetEndpoint("https")?.Url ?? "unknown";
-
-    var dbInitialisationScript = ps.AddScript("db-ps-script",
+    ps.AddScript("db-ps-script",
         """
         #param($embeddingEndpoint, $dim)
-        param($dim)
+        param($embeddingModel, $dim)
     
         # Write-Information "Embedding endpoint: $embeddingEndpoint"
+        Write-Information "Embedding model: $embeddingModel"
         Write-Information "Embedding dimensions: $dim"
-        Write-Information "`$database is $database"
+        Write-Information ('$dim is ' + $dim)
+        Write-Information "database is $database"
+        #Write-Information "ep is $ep"
+        #Write-Information "eps is $eps"
     
+        # List environment variables
+        Write-Information "Environment variables:"
+        Get-ChildItem Env:
+
+        $testing = $env:TESTENVVAR
+        Write-Information "Test env var: $testing"
+        
+        $embeddingEndpoint = $env:services__ollama__https__0
+        Write-Information "Ollama Endpoint: $embeddingEndpoint"
+
         # Call SQL script here
 
         Write-Information "SQL database initialised"
+
         """)
+        .WithEnvironment("TESTENVVAR", "Hello world")
         .WithArgs(
-            //ollama.GetEndpoint("tunnel").Url,
             //GetEmbeddingUrl(),
-            embeddingDiemensions)
-        .WaitFor(devTunnel)
+            aiEmbeddingModelParameter ?? "",
+            embeddingDiemensions
+            //ollama.GetEndpoint("http")?.Url ?? "unknown",
+            //devTunnel.GetEndpoint("https")?.Url ?? "unknown"
+            )
+        //.WaitFor(devTunnel)
+        //.WaitFor(devTunnel)
+        .WithReference(ollama, devTunnel)
+        .WithReference(embeddingModel)
+        .WithReference(sql)
         .OnBeforeResourceStarted((s, e, c) =>
         {
             Console.WriteLine("Script starting");
@@ -151,17 +140,31 @@ catch (Exception ex)
 }
 #pragma warning restore CA1031 // Do not catch general exception types
 
+//var migrations = builder.AddProject<Projects.Sql_Vector_Embeddings_MigrationService>("migrations")
+//    .WithReference(sql)
+//    .WithReference(ollama, devTunnel)
+//    .WithEnvironment("AISettings:embeddingDimensions", aiEmbeddingDimensionsParameter)
+//    .WithEnvironment("AISettings:embeddingModel", aiEmbeddingModelParameter)
+//    .WaitFor(sql);
+
+var databaseDeployment = builder.AddProject<Projects.Sql_Vector_Embeddings_DatabaseDeploymentService>("deploy")
+    .WithReference(sql)
+    .WithReference(ollama, devTunnel)
+    .WithEnvironment("AISettings:embeddingDimensions", aiEmbeddingDimensionsParameter)
+    .WithEnvironment("AISettings:embeddingModel", aiEmbeddingModelParameter)
+    .WaitFor(sql);
+
 builder.AddAzureFunctionsProject<Projects.Sql_Vector_Embeddings_Ingestion_Functions>("ingestion-functions")
-    .WithReference(sqlDatabase)
-    //.WaitFor(sql)
-    //.WaitForCompletion(dbInitialisationScript)
+    .WithReference(sql)
+    .WaitForCompletion(databaseDeployment)
+    //.WaitForCompletion(migrations)
     ;
 
 string[] queryPromptArgs = [];
 builder.AddProject<Projects.Sql_Vector_Embeddings_QueryConsole>("query-console")
     .WithReference(chatModel)
     .WithReference(embeddingModel)
-    .WithReference(sqlDatabase)
+    .WithReference(sql)
     .WithEnvironment("AISettings:embeddingDimensions", aiEmbeddingDimensionsParameter)
     //.WaitFor(chatModel)
     //.WaitFor(embeddingModel)

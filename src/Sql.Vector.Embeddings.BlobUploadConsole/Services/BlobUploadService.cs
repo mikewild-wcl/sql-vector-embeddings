@@ -36,7 +36,7 @@ internal partial class BlobUploadService(
         {
             //TODO: Refactor to a cli app
             var path = configuration["fileDirectory"];
-            var blobContainer = configuration["blobStorage:companiesHouseContainerName"] ?? throw new InvalidOperationException("Configuration for blobStorage:companiesHouseContainerName not found");
+            var blobContainer = configuration["blobStorage:containerName"] ?? throw new InvalidOperationException("Configuration for blobStorage:containerName not found");
             var userId = configuration["userId"] ?? "unknown";
             var delay = int.TryParse(configuration["delay"], out var delayValue) ? delayValue : 0;
 

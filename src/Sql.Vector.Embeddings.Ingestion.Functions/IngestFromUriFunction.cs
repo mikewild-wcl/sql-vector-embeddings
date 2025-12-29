@@ -16,7 +16,7 @@ public class IngestFromUriFunction(ILogger<IngestFromUriFunction> logger)
             new EventId(0, nameof(IngestFromUriFunction)),
             "IngestFromUriFunction http function triggered with {Count} uris.");
 
-    private static readonly Action<ILogger, Exception?> _logNullriParameterWarning =
+    private static readonly Action<ILogger, Exception?> _logNullUriParameterWarning =
         LoggerMessage.Define(
             LogLevel.Warning,
             new EventId(0, nameof(IngestFromUriFunction)),
@@ -31,13 +31,13 @@ public class IngestFromUriFunction(ILogger<IngestFromUriFunction> logger)
     [Function("IngestFromUriFunction")]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Function, "post", Route = "ingest-uris")]
-        HttpRequest request,
+        HttpRequest _,
         [Microsoft.Azure.Functions.Worker.Http.FromBody]
         UriListRequest uris)
     {
         if (uris?.Uris is null || uris.Uris.Count == 0)
         {
-            _logNullriParameterWarning(_logger, null);
+            _logNullUriParameterWarning(_logger, null);
             return new BadRequestObjectResult("No URIs provided.");
         }
 

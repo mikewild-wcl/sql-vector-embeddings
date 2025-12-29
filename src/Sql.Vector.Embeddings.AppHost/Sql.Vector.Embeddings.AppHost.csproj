@@ -13,11 +13,13 @@
     <PackageReference Include="Aspire.Hosting.DevTunnels" Version="13.1.0" />
     <PackageReference Include="Aspire.Hosting.SqlServer" Version="13.1.0" />
     <PackageReference Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="13.0.1-beta.468" />
-    <PackageReference Include="CommunityToolkit.Aspire.Hosting.PowerShell" Version="13.0.0" />
+    <PackageReference Include="CommunityToolkit.Aspire.Hosting.PowerShell" Version="13.0.1-beta.468" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Sql.Vector.Embeddings.DatabaseDeploymentService\Sql.Vector.Embeddings.DatabaseDeploymentService.csproj" />
     <ProjectReference Include="..\Sql.Vector.Embeddings.Ingestion.Functions\Sql.Vector.Embeddings.Ingestion.Functions.csproj" />
+    <ProjectReference Include="..\Sql.Vector.Embeddings.MigrationService\Sql.Vector.Embeddings.MigrationService.csproj" />
     <ProjectReference Include="..\Sql.Vector.Embeddings.QueryConsole\Sql.Vector.Embeddings.QueryConsole.csproj" />
   </ItemGroup>
 

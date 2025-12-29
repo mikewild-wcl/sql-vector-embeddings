@@ -4,6 +4,8 @@
     <Project Path="Sql.Vector.Embeddings.ServiceDefaults/Sql.Vector.Embeddings.ServiceDefaults.csproj" />
   </Folder>
   <Project Path="Sql.Vector.Embeddings.BlobUploadConsole/Sql.Vector.Embeddings.BlobUploadConsole.csproj" Id="400ab6cc-f01f-4ef8-8c29-107cd6790f9a" />
+  <Project Path="Sql.Vector.Embeddings.DatabaseDeploymentService/Sql.Vector.Embeddings.DatabaseDeploymentService.csproj" Id="1a5f8f64-29cf-478e-b47f-323c91b6ec2f" />
   <Project Path="Sql.Vector.Embeddings.Ingestion.Functions/Sql.Vector.Embeddings.Ingestion.Functions.csproj" Id="d84def50-9a0a-43db-9ab0-652419d90993" />
+  <Project Path="Sql.Vector.Embeddings.MigrationService/Sql.Vector.Embeddings.MigrationService.csproj" Id="3f4b1e16-cb3c-4a72-9c05-eea2b41bb352" />
   <Project Path="Sql.Vector.Embeddings.QueryConsole/Sql.Vector.Embeddings.QueryConsole.csproj" Id="e0ff3204-5ebd-4b11-8d42-a8b0f42e6e71" />
 </Solution>

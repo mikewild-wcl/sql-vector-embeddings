@@ -13,6 +13,4 @@ builder.AddSqlServerClient("sql");
 
 var host = builder.Build();
 
-await host.RunAsync();
-
-return 0;
+await host.RunAsync().ConfigureAwait(true);

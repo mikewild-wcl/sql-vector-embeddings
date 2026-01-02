@@ -1,7 +1,6 @@
-using Aspire.Hosting;
-using Aspire.Hosting.DevTunnels;
 using CommunityToolkit.Aspire.Hosting.PowerShell;
 using Microsoft.Extensions.DependencyInjection;
+using Sql.Vector.Embeddings.AppHost.Extensions;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -16,22 +15,19 @@ var builder = DistributedApplication.CreateBuilder(args);
     - nuget CommunityToolkit.Aspire.Hosting.Ollama
 
 */
+
 //builder.AddProject<Projects.Sql_Vector_Embeddings_BlobUploadConsole>("blob-upload-console");
 
 var aiModelParameter = builder.Configuration[$"Parameters:model"];
 var aiEmbeddingModelParameter = builder.Configuration[$"Parameters:embeddingModel"];
 var aiEmbeddingDimensionsParameter = builder.Configuration[$"Parameters:embeddingDimensions"];
-var useGPUParameter = builder.Configuration[$"Parameters:useGPU"];
+var gpuVendorParameter = builder.Configuration[$"Parameters:OllamaGpuVendor"];
 
 var ollama = builder.AddOllama("ollama")
+    .WithGPUSupportIfVendorParameterProvided(gpuVendorParameter)
     .WithLifetime(ContainerLifetime.Persistent)
     .WithDataVolume()
     .WithOpenWebUI();
-
-if (bool.TryParse(useGPUParameter, out var useGPU) && useGPU)
-{
-    ollama.WithGPUSupport();
-}
 
 var chatModel = ollama.AddModel("chat", aiModelParameter!);
 var embeddingModel = ollama.AddModel("embeddings", aiEmbeddingModelParameter!);
@@ -58,6 +54,7 @@ var devTunnel = builder.AddDevTunnel("ollama-api")
     });
 
 var sql = builder.AddSqlServer("sql")
+    .WithImage("mssql/server", "2025-latest")
     .WithDataVolume()
     .WithLifetime(ContainerLifetime.Persistent)
     .AddDatabase("database", "Documents");
@@ -140,14 +137,14 @@ catch (Exception ex)
 }
 #pragma warning restore CA1031 // Do not catch general exception types
 
-//var migrations = builder.AddProject<Projects.Sql_Vector_Embeddings_MigrationService>("migrations")
-//    .WithReference(sql)
-//    .WithReference(ollama, devTunnel)
-//    .WithEnvironment("AISettings:embeddingDimensions", aiEmbeddingDimensionsParameter)
-//    .WithEnvironment("AISettings:embeddingModel", aiEmbeddingModelParameter)
-//    .WaitFor(sql);
+var migrations = builder.AddProject<Projects.Sql_Vector_Embeddings_MigrationService>("migrations")
+    .WithReference(sql)
+    .WithReference(ollama, devTunnel)
+    .WithEnvironment("AISettings:embeddingDimensions", aiEmbeddingDimensionsParameter)
+    .WithEnvironment("AISettings:embeddingModel", aiEmbeddingModelParameter)
+    .WaitFor(sql);
 
-var databaseDeployment = builder.AddProject<Projects.Sql_Vector_Embeddings_DatabaseDeploymentService>("deploy")
+var databaseDeployment = builder.AddProject<Projects.Sql_Vector_Embeddings_DatabaseDeploymentService>("deploy-db")
     .WithReference(sql)
     .WithReference(ollama, devTunnel)
     .WithEnvironment("AISettings:embeddingDimensions", aiEmbeddingDimensionsParameter)

@@ -3,7 +3,8 @@
     "allow": [
       "Bash(xargs cat:*)",
       "Bash(cat:*)",
-      "Bash(dotnet --info:*)"
+      "Bash(dotnet --info:*)",
+      "Bash(done)"
     ]
   }
 }

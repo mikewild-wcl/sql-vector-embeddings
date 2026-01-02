@@ -15,3 +15,9 @@ There is a test http script in the functions folder that can be used to call it.
 curl -X POST http://localhost:7034/api/ingest-uris/ -H "Content-Type: application/json" -d '{"uris": ["https://arxiv.org/pdf/1409.0473" ] }'
 ```
 
+# AI model clients
+
+If using Ollama and have a GPU, include a parameter `OllamaGpuVendor` in the AppHost appsettings or secrets. The value can be `Nvidia` or `AMD` (or any future values from `Aspire.Hosting.OllamaGpuVendor`).
+This is added via an extension `WithGPUSupportIfVendorParameterProvided` and should match your system.
+
+ 

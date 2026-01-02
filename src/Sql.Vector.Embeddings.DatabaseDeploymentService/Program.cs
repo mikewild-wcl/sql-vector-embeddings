@@ -1,10 +1,20 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using DbUp;
+using DbUp.Extensions.Logging;
+using DbUp.ScriptProviders;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System.Text;
+
+#pragma warning disable CA1848 // Use the LoggerMessage delegates
 
 var builder = Host.CreateApplicationBuilder();
 builder.AddServiceDefaults();
 
-builder.AddSqlServerClient("sql");
+using var loggerFactory = LoggerFactory.Create(builder => builder.AddSimpleConsole());
+var logger = loggerFactory.CreateLogger<Program>();
+
+//builder.AddSqlServerClient("sql");
 
 //See https://github.com/yorek/azure-sql-db-ai-samples-search/blob/main/db-scripts/Program.cs
 //    https://devblogs.microsoft.com/azure-sql/efficiently-and-elegantly-modeling-embeddings-in-azure-sql-and-sql-server/
@@ -23,8 +33,48 @@ Console.WriteLine($"  Ollama endpoint: {ollamaEndpoint}");
 var connections = builder.Configuration.GetSection("ConnectionStrings");
 if (connections is not null)
 {
-    foreach (var conn in connections.AsEnumerable())
+    foreach (var connString in connections.AsEnumerable())
     {
-        Console.WriteLine($"  {conn.Key}:{conn.Value}");
+        Console.WriteLine($"  {connString.Key}:{connString.Value}");
     }
 }
+
+var connectionString = builder.Configuration.GetConnectionString("database");
+
+var serviceProvider = builder.Build().Services;
+
+FileSystemScriptOptions options = new(){
+    IncludeSubDirectories = false,
+    Extensions = ["*.sql"],
+    //Filter = (f) => !f.Contains(".local."),
+    Encoding = Encoding.UTF8
+};
+
+Dictionary<string, string> variables = new() 
+{
+    {"AI_CLIENT_ENDPOINT", ollamaEndpoint},
+    //{"AI_KEY", Env.GetString("OPENAI_KEY")},
+    {"EMBEDDING_DEPLOYMENT_NAME", embeddingModel},
+    //{"OPENAI_CHAT_DEPLOYMENT_NAME", Env.GetString("OPENAI_CHAT_DEPLOYMENT_NAME")}
+};
+var sqlFolder = "./sql";
+
+logger.LogInformation("Starting deployment...");
+var dbup = DeployChanges.To
+    .SqlDatabase(connectionString)
+    .WithVariables(variables)
+    .WithScriptsFromFileSystem(sqlFolder, options)
+    .JournalToSqlTable("dbo", "$__dbup_journal")
+    .AddLoggerFromServiceProvider(serviceProvider)
+    .Build();
+
+var result = dbup.PerformUpgrade();
+
+if (!result.Successful)
+{
+    Console.WriteLine(result.Error);
+    return -1;
+}
+
+logger.LogInformation("Deployed successfully!");
+return 0;

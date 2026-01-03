@@ -13,7 +13,6 @@ var builder = DistributedApplication.CreateBuilder(args);
 
  - Ollama integration - https://aspire.dev/integrations/ai/ollama/
     - nuget CommunityToolkit.Aspire.Hosting.Ollama
-
 */
 
 //builder.AddProject<Projects.Sql_Vector_Embeddings_BlobUploadConsole>("blob-upload-console");
@@ -99,7 +98,6 @@ try
         """)
         .WithEnvironment("TESTENVVAR", "Hello world")
         .WithArgs(
-            //GetEmbeddingUrl(),
             aiEmbeddingModelParameter ?? "",
             embeddingDiemensions
             //ollama.GetEndpoint("http")?.Url ?? "unknown",
@@ -137,12 +135,12 @@ catch (Exception ex)
 }
 #pragma warning restore CA1031 // Do not catch general exception types
 
-var migrations = builder.AddProject<Projects.Sql_Vector_Embeddings_MigrationService>("migrations")
-    .WithReference(sql)
-    .WithReference(ollama, devTunnel)
-    .WithEnvironment("AISettings:embeddingDimensions", aiEmbeddingDimensionsParameter)
-    .WithEnvironment("AISettings:embeddingModel", aiEmbeddingModelParameter)
-    .WaitFor(sql);
+//var migrations = builder.AddProject<Projects.Sql_Vector_Embeddings_MigrationService>("migrations")
+//    .WithReference(sql)
+//    .WithReference(ollama, devTunnel)
+//    .WithEnvironment("AISettings:embeddingDimensions", aiEmbeddingDimensionsParameter)
+//    .WithEnvironment("AISettings:embeddingModel", aiEmbeddingModelParameter)
+//    .WaitFor(sql);
 
 var databaseDeployment = builder.AddProject<Projects.Sql_Vector_Embeddings_DatabaseDeploymentService>("deploy-db")
     .WithReference(sql)
@@ -220,6 +218,3 @@ builder.AddProject<Projects.Sql_Vector_Embeddings_QueryConsole>("query-console")
         });
 
 await builder.Build().RunAsync();
-
-string GetEmbeddingUrl() => 
-    ollama.GetEndpoint("tunnel")?.Url ?? "not ready";

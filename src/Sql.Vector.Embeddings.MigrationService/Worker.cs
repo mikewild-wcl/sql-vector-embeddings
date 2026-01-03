@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Diagnostics;
 
 namespace Sql.Vector.Embeddings.MigrationService;
@@ -40,31 +39,6 @@ public class Worker(
             Console.WriteLine($"  Embedding dimensions: {embeddingDimensions}");
             Console.WriteLine($"  Ollama tunnel: {ollamaTunnel}");
             Console.WriteLine($"  Ollama endpoint: {ollamaEndpoint}");
-
-            Console.WriteLine($"All configuration:");
-            foreach (var config in configuration.AsEnumerable())
-            {
-                Console.WriteLine($"  {config.Key}:{config.Value}");
-            }
-
-            Console.WriteLine($"Connection strings:");
-            var connections = configuration.GetSection("ConnectionStrings");
-            if (connections is not null)
-            {
-                foreach (var conn in connections.AsEnumerable())
-                {
-                    Console.WriteLine($"  {conn.Key}:{conn.Value}");
-                }
-            }
-            Console.WriteLine("======================\n");
-
-            Console.WriteLine("\n======================");
-            Console.WriteLine($"Environment variables:");
-            foreach (DictionaryEntry e in System.Environment.GetEnvironmentVariables())
-            {
-                Console.WriteLine($"  {e.Key}:{e.Value}");
-            }
-            Console.WriteLine("======================\n");
 
             //var dbContext = scope.ServiceProvider.GetRequiredService<TicketContext>();
 

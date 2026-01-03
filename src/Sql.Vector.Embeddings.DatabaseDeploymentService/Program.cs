@@ -4,9 +4,12 @@ using DbUp.ScriptProviders;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 using System.Text;
 
 #pragma warning disable CA1848 // Use the LoggerMessage delegates
+
+const string sqlFolder = "./sql";
 
 var builder = Host.CreateApplicationBuilder();
 builder.AddServiceDefaults();
@@ -14,50 +17,33 @@ builder.AddServiceDefaults();
 using var loggerFactory = LoggerFactory.Create(builder => builder.AddSimpleConsole());
 var logger = loggerFactory.CreateLogger<Program>();
 
-//builder.AddSqlServerClient("sql");
-
 //See https://github.com/yorek/azure-sql-db-ai-samples-search/blob/main/db-scripts/Program.cs
 //    https://devblogs.microsoft.com/azure-sql/efficiently-and-elegantly-modeling-embeddings-in-azure-sql-and-sql-server/
 
-Console.WriteLine($"Configuration:");
 var embeddingDimensions = int.TryParse(builder.Configuration["AISettings:embeddingDimensions"], out var dimensions) && dimensions > 0 ? dimensions : 1536;
 var embeddingModel = builder.Configuration["AISettings:embeddingModel"];
 var ollamaTunnel = builder.Configuration["services:ollama:http:0"];
 var ollamaEndpoint = builder.Configuration["OLLAMA_HTTP"];
 
-Console.WriteLine($"  Embedding model {embeddingModel}");
-Console.WriteLine($"  Embedding dimensions: {embeddingDimensions}");
-Console.WriteLine($"  Ollama tunnel: {ollamaTunnel}");
-Console.WriteLine($"  Ollama endpoint: {ollamaEndpoint}");
-
-var connections = builder.Configuration.GetSection("ConnectionStrings");
-if (connections is not null)
-{
-    foreach (var connString in connections.AsEnumerable())
-    {
-        Console.WriteLine($"  {connString.Key}:{connString.Value}");
-    }
-}
-
 var connectionString = builder.Configuration.GetConnectionString("database");
 
 var serviceProvider = builder.Build().Services;
 
-FileSystemScriptOptions options = new(){
+FileSystemScriptOptions options = new()
+{
     IncludeSubDirectories = false,
     Extensions = ["*.sql"],
     //Filter = (f) => !f.Contains(".local."),
     Encoding = Encoding.UTF8
 };
 
-Dictionary<string, string> variables = new() 
+Dictionary<string, string> variables = new()
 {
     {"AI_CLIENT_ENDPOINT", ollamaEndpoint},
-    //{"AI_KEY", Env.GetString("OPENAI_KEY")},
+    //{"AI_CLIENT_KEY", Env.GetString("OPENAI_KEY")},
     {"EMBEDDING_DEPLOYMENT_NAME", embeddingModel},
-    //{"OPENAI_CHAT_DEPLOYMENT_NAME", Env.GetString("OPENAI_CHAT_DEPLOYMENT_NAME")}
+    {"EMBEDDING_DIMENSIONS", embeddingDimensions.ToString("D", CultureInfo.InvariantCulture)}
 };
-var sqlFolder = "./sql";
 
 logger.LogInformation("Starting deployment...");
 var dbup = DeployChanges.To
@@ -72,7 +58,7 @@ var result = dbup.PerformUpgrade();
 
 if (!result.Successful)
 {
-    Console.WriteLine(result.Error);
+    logger.LogError(result.Error, "Deployment failed.");
     return -1;
 }
 

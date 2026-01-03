@@ -10,7 +10,6 @@ builder.AddOllamaApiClient("chat").AddChatClient();
 builder.AddOllamaApiClient("embeddings").AddEmbeddingGenerator();
 
 //TODO: can I get "AISettings:embeddingDimensions" from the embedding model?
-//TODO: Try to get an interactive command app
 //      https://rasper87.blog/2025/10/29/building-a-dynamic-command-sample-with-net-aspire/
 //      https://github.com/dotnet/aspire/discussions/4625
 var embeddingDimensions = int.TryParse(builder.Configuration["AISettings:embeddingDimensions"], out var dimensions) && dimensions > 0 ? dimensions : 1536;

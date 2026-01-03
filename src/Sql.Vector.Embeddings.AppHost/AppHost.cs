@@ -1,6 +1,7 @@
 using CommunityToolkit.Aspire.Hosting.PowerShell;
 using Microsoft.Extensions.DependencyInjection;
 using Sql.Vector.Embeddings.AppHost.Extensions;
+using Sql.Vector.Embeddings.AppHost.ParameterDefaults;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -15,12 +16,12 @@ var builder = DistributedApplication.CreateBuilder(args);
     - nuget CommunityToolkit.Aspire.Hosting.Ollama
 */
 
-//builder.AddProject<Projects.Sql_Vector_Embeddings_BlobUploadConsole>("blob-upload-console");
-
-var aiModelParameter = builder.Configuration[$"Parameters:model"];
-var aiEmbeddingModelParameter = builder.Configuration[$"Parameters:embeddingModel"];
-var aiEmbeddingDimensionsParameter = builder.Configuration[$"Parameters:embeddingDimensions"];
-var gpuVendorParameter = builder.Configuration[$"Parameters:OllamaGpuVendor"];
+var aiModelParameter = builder.AddParameter("Model");
+var aiEmbeddingModelParameter = builder.AddParameter("EmbeddingModel");
+var aiEmbeddingDimensionsParameter = builder.AddParameter("EmbeddingDimensions");
+var sqlServerPortParameter = builder.AddParameter("SqlServerPort", value: new NullParameterDefault());
+var sqlPasswordParameter = builder.AddParameter("SqlServerPassword", value: new NullParameterDefault(), secret: true);
+var gpuVendorParameter = builder.AddParameter("OllamaGpuVendor", value: new NullParameterDefault());
 
 var ollama = builder.AddOllama("ollama")
     .WithGPUSupportIfVendorParameterProvided(gpuVendorParameter)
@@ -28,8 +29,8 @@ var ollama = builder.AddOllama("ollama")
     .WithDataVolume()
     .WithOpenWebUI();
 
-var chatModel = ollama.AddModel("chat", aiModelParameter!);
-var embeddingModel = ollama.AddModel("embeddings", aiEmbeddingModelParameter!);
+var chatModel = ollama.AddModel("chat", (await aiModelParameter.Resource.GetValueAsync(default))!);
+var embeddingModel = ollama.AddModel("embeddings", (await aiEmbeddingModelParameter.Resource.GetValueAsync(default))!);
 
 var devTunnel = builder.AddDevTunnel("ollama-api")
    .WithReference(ollama
@@ -52,12 +53,18 @@ var devTunnel = builder.AddDevTunnel("ollama-api")
         return Task.CompletedTask;
     });
 
+//var port = await sqlServerPortParameter.Resource.GetValueAsync(default);
+var port = int.TryParse((await sqlServerPortParameter.Resource.GetValueAsync(default)), out var portNo) ? portNo : default(int?);
 var sql = builder.AddSqlServer("sql")
     .WithImage("mssql/server", "2025-latest")
+    .WithHostPort(port)
+    .WithEndpointIfPortParameterProvided("sql-server", sqlServerPortParameter)
     .WithDataVolume()
+    .WithPassword(sqlPasswordParameter)
     .WithLifetime(ContainerLifetime.Persistent)
     .AddDatabase("database", "Documents");
 
+/*
 var ps = builder.AddPowerShell("ps")
     //.WithReference(ollama, devTunnel)
     //.WithReference(devTunnel.GetEndpoint(ollama, "https"));
@@ -134,6 +141,7 @@ catch (Exception ex)
     Console.WriteLine($"Error setting up database initialisation script: {ex}");
 }
 #pragma warning restore CA1031 // Do not catch general exception types
+*/
 
 //var migrations = builder.AddProject<Projects.Sql_Vector_Embeddings_MigrationService>("migrations")
 //    .WithReference(sql)
@@ -144,7 +152,7 @@ catch (Exception ex)
 
 var databaseDeployment = builder.AddProject<Projects.Sql_Vector_Embeddings_DatabaseDeploymentService>("deploy-db")
     .WithReference(sql)
-    .WithReference(ollama, devTunnel)
+    .WithReference(ollama, devTunnel)    
     .WithEnvironment("AISettings:embeddingDimensions", aiEmbeddingDimensionsParameter)
     .WithEnvironment("AISettings:embeddingModel", aiEmbeddingModelParameter)
     .WaitFor(sql);
@@ -155,15 +163,14 @@ builder.AddAzureFunctionsProject<Projects.Sql_Vector_Embeddings_Ingestion_Functi
     //.WaitForCompletion(migrations)
     ;
 
+//builder.AddProject<Projects.Sql_Vector_Embeddings_BlobUploadConsole>("blob-upload-console")
+//    .WithExplicitStart();
+
 string[] queryPromptArgs = [];
 builder.AddProject<Projects.Sql_Vector_Embeddings_QueryConsole>("query-console")
     .WithReference(chatModel)
     .WithReference(embeddingModel)
     .WithReference(sql)
-    .WithEnvironment("AISettings:embeddingDimensions", aiEmbeddingDimensionsParameter)
-    //.WaitFor(chatModel)
-    //.WaitFor(embeddingModel)
-    //.WaitFor(sql)
     .WithExplicitStart()
     .WithArgs(context =>
     {

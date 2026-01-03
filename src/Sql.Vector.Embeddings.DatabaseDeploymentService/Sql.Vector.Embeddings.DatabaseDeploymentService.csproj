@@ -20,6 +20,7 @@
   <ItemGroup>
     <PackageReference Include="DbUp" Version="5.0.41" />
     <PackageReference Include="DbUp.Extensions.Microsoft.Logging" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
   </ItemGroup>
 
   <ItemGroup>

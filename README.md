@@ -14,7 +14,7 @@ Optionally you can set the SQL Server port and sa password by adding these param
    }
 ```
 
-# Call function app
+## Call function app
 
 The function app expects an array called `uris` with an array of uris pointing to pdf files. 
 
@@ -23,7 +23,12 @@ There is a test http script in the functions folder that can be used to call it.
 curl -X POST http://localhost:7034/api/ingest-uris/ -H "Content-Type: application/json" -d '{"uris": ["https://arxiv.org/pdf/1409.0473" ] }'
 ```
 
-# AI model clients
+## Aspire hosting and deployment
+
+ - Function integration - https://learn.microsoft.com/en-us/azure/azure-functions/dotnet-aspire-integration
+
+
+## AI model clients
 
 If using Ollama and have a GPU, include a parameter `OllamaGpuVendor` in the AppHost appsettings or secrets. The value can be `Nvidia` or `AMD` (or any future values from `Aspire.Hosting.OllamaGpuVendor`).
 This is added via an extension `WithGPUSupportIfVendorParameterProvided` and should match your system.
@@ -32,3 +37,4 @@ This is added via an extension `WithGPUSupportIfVendorParameterProvided` and sho
    "OllamaGpuVendor": "Nvidia"
    }
 ```
+

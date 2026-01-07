@@ -5,17 +5,6 @@ using Sql.Vector.Embeddings.AppHost.ParameterDefaults;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-/*
- Links for in-progress work
- ==========================
-  
- - Function integration - https://learn.microsoft.com/en-us/azure/azure-functions/dotnet-aspire-integration
-    - nuget Aspire.Hosting.Azure.Functions
-
- - Ollama integration - https://aspire.dev/integrations/ai/ollama/
-    - nuget CommunityToolkit.Aspire.Hosting.Ollama
-*/
-
 var aiModelParameter = builder.AddParameter("Model");
 var aiEmbeddingModelParameter = builder.AddParameter("EmbeddingModel");
 var aiEmbeddingDimensionsParameter = builder.AddParameter("EmbeddingDimensions");
@@ -53,7 +42,6 @@ var devTunnel = builder.AddDevTunnel("ollama-api")
         return Task.CompletedTask;
     });
 
-//var port = await sqlServerPortParameter.Resource.GetValueAsync(default);
 var port = int.TryParse((await sqlServerPortParameter.Resource.GetValueAsync(default)), out var portNo) ? portNo : default(int?);
 var sql = builder.AddSqlServer("sql")
     .WithImage("mssql/server", "2025-latest")

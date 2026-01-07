@@ -20,9 +20,9 @@ var logger = loggerFactory.CreateLogger<Program>();
 //See https://github.com/yorek/azure-sql-db-ai-samples-search/blob/main/db-scripts/Program.cs
 //    https://devblogs.microsoft.com/azure-sql/efficiently-and-elegantly-modeling-embeddings-in-azure-sql-and-sql-server/
 
+var aiProvider = builder.Configuration["Ai:Provider"] ?? "Ollama";
 var embeddingDimensions = int.TryParse(builder.Configuration["AISettings:embeddingDimensions"], out var dimensions) && dimensions > 0 ? dimensions : 1536;
 var embeddingModel = builder.Configuration["AISettings:embeddingModel"];
-var ollamaTunnel = builder.Configuration["services:ollama:http:0"];
 var ollamaEndpoint = builder.Configuration["OLLAMA_HTTP"];
 
 var connectionString = builder.Configuration.GetConnectionString("database");
@@ -39,10 +39,11 @@ FileSystemScriptOptions options = new()
 
 Dictionary<string, string> variables = new()
 {
-    {"AI_CLIENT_ENDPOINT", ollamaEndpoint},
-    //{"AI_CLIENT_KEY", Env.GetString("OPENAI_KEY")},
-    {"EMBEDDING_DEPLOYMENT_NAME", embeddingModel},
-    {"EMBEDDING_DIMENSIONS", embeddingDimensions.ToString("D", CultureInfo.InvariantCulture)}
+    { "AI_PROVIDER", aiProvider.ToUpperInvariant() },
+    { "AI_CLIENT_ENDPOINT", ollamaEndpoint! },
+    //{ "AI_CLIENT_KEY", Env.GetString("OPENAI_KEY")},
+    { "EMBEDDING_MODEL", embeddingModel! },
+    { "EMBEDDING_DIMENSIONS", embeddingDimensions.ToString("D", CultureInfo.InvariantCulture)}
 };
 
 logger.LogInformation("Starting deployment...");

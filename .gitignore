@@ -418,7 +418,7 @@ FodyWeavers.xsd
 *.msp
 
 # AppSettings Development file
-**/appSettings.Development.json
+#**/appSettings.Development.json
 
 # Private data files
 private/

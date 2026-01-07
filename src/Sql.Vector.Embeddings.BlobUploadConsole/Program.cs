@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Sql.Vector.Embeddings.BlobUploadConsole.Services;
 
 //var builder = Host.CreateDefaultBuilder()

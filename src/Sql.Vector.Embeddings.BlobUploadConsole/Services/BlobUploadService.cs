@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Azure.Storage.Blobs;
+﻿using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

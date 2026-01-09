@@ -220,10 +220,47 @@ Critical for startup ordering:
 
 ## Testing
 
-**Status**: No test projects currently present in the solution.
+### Test Projects
 
-When adding tests:
-- Follow naming: `Sql.Vector.Embeddings.{Component}.Tests`
-- Use xUnit (standard for .NET)
+The solution includes two unit test projects:
+- **`Sql.Vector.Embeddings.Data.UnitTests`** - Tests for data access layer
+- **`Sql.Vector.Embeddings.Ingestion.Core.UnitTests`** - Tests for ingestion business logic
+
+### Testing Stack
+
+Nuget packages are minimum versions. The latest version can be used if available.
+
+**Test Framework**: xUnit v3.2.1
+
+**Assertions**: **Shouldly v4.3.0** (REQUIRED)
+- Provides fluent, readable assertions
+- Example: `result.ShouldBe(expected);` instead of `Assert.Equal(expected, result);`
+
+**Mocking/Test Doubles**: **NSubstitute v5.3.0** (REQUIRED)
+- Simple, concise mocking syntax
+- Example: `var mock = Substitute.For<IService>();`
+
+### Running Tests
+
+```bash
+# Run all tests
+dotnet test
+
+# Run specific test project
+dotnet test src/Sql.Vector.Embeddings.Data.UnitTests
+
+# Run tests with detailed output
+dotnet test --logger "console;verbosity=detailed"
+
+# Run single test by name filter
+dotnet test --filter "FullyQualifiedName~MyTestName"
+```
+
+### Test Conventions
+
+- Follow naming: `Sql.Vector.Embeddings.{Component}.UnitTests`
+- Use **Shouldly** for all assertions (not xUnit Assert)
+- Use **NSubstitute** for all mocking (not Moq or other frameworks)
 - Reference ServiceDefaults for integration tests
 - Use Aspire.Hosting.Testing for container-based tests
+- Test method naming: `MethodName_Scenario_ExpectedBehavior`

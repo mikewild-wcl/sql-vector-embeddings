@@ -1,10 +1,12 @@
-﻿using Azure.Storage.Blobs;
+﻿using System.Diagnostics.CodeAnalysis;
+using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Sql.Vector.Embeddings.BlobUploadConsole.Services;
 
+[SuppressMessage("Performance", "CA1852:Seal internal types", Justification = "Class may be extended in future refactoring")]
 internal partial class BlobUploadService(
     IConfiguration configuration,
     BlobServiceClient blobServiceClient,

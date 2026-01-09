@@ -4,7 +4,8 @@
       "Bash(xargs cat:*)",
       "Bash(cat:*)",
       "Bash(dotnet --info:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(dotnet build:*)"
     ]
   }
 }

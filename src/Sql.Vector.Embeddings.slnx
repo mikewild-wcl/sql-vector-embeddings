@@ -3,8 +3,14 @@
     <Project Path="Sql.Vector.Embeddings.AppHost/Sql.Vector.Embeddings.AppHost.csproj" />
     <Project Path="Sql.Vector.Embeddings.ServiceDefaults/Sql.Vector.Embeddings.ServiceDefaults.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Sql.Vector.Embeddings.Data.UnitTests/Sql.Vector.Embeddings.Data.UnitTests.csproj" Id="18f10aab-8044-4916-ad67-ac92f6a73eb4" />
+    <Project Path="Sql.Vector.Embeddings.Ingestion.Core.UnitTests/Sql.Vector.Embeddings.Ingestion.Core.UnitTests.csproj" Id="d6500443-b064-49ff-8136-c670745b6997" />
+  </Folder>
   <Project Path="Sql.Vector.Embeddings.BlobUploadConsole/Sql.Vector.Embeddings.BlobUploadConsole.csproj" Id="400ab6cc-f01f-4ef8-8c29-107cd6790f9a" />
+  <Project Path="Sql.Vector.Embeddings.Data/Sql.Vector.Embeddings.Data.csproj" Id="eb99c975-578b-4de4-a809-b93b143d90f8" />
   <Project Path="Sql.Vector.Embeddings.DatabaseDeploymentService/Sql.Vector.Embeddings.DatabaseDeploymentService.csproj" Id="1a5f8f64-29cf-478e-b47f-323c91b6ec2f" />
+  <Project Path="Sql.Vector.Embeddings.Ingestion.Core/Sql.Vector.Embeddings.Ingestion.Core.csproj" Id="233f868d-f888-496f-b739-bba230a707a0" />
   <Project Path="Sql.Vector.Embeddings.Ingestion.Functions/Sql.Vector.Embeddings.Ingestion.Functions.csproj" Id="d84def50-9a0a-43db-9ab0-652419d90993" />
   <Project Path="Sql.Vector.Embeddings.MigrationService/Sql.Vector.Embeddings.MigrationService.csproj" Id="3f4b1e16-cb3c-4a72-9c05-eea2b41bb352" />
   <Project Path="Sql.Vector.Embeddings.QueryConsole/Sql.Vector.Embeddings.QueryConsole.csproj" Id="e0ff3204-5ebd-4b11-8d42-a8b0f42e6e71" />

@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Sql.Vector.Embeddings.Data\Sql.Vector.Embeddings.Data.csproj" />
     <ProjectReference Include="..\Sql.Vector.Embeddings.ServiceDefaults\Sql.Vector.Embeddings.ServiceDefaults.csproj" />
   </ItemGroup>
 
